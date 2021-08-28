@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://www.tecnomint.com/images/brand/5.jpg'
   },
+  role:{
+    type:String,
+    default:'user' // fast
+  },
   type:{
     type:String,
     default:'normal' // fast
