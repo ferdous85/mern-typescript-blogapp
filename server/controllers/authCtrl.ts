@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { generateActiveToken } from '../config/generateToken'
 import sendEmail from '../config/sendEmail'
+import {IToken} from '../config/interface'
 import { validateEmail } from '../middleware/valid'
 
 const CLIENT_URL = `${process.env.BASE_URL}`
@@ -33,7 +34,26 @@ const authCtrl={
     } catch (error) {
       return res.status(500).json({msg: error})
     }
+  },
+
+  activeAccount: async(req: Request, res: Response) =>{
+    try {
+      const { active_token } = req.body
+      const decoded =<IToken> jwt.verify(active_token, `${process.env.ACTIVE_TOKEN_SECRET}`)
+      
+      const { newUser} = decoded 
+
+      const user = new Users(newUser)
+      console.log(user);
+      
+      await user.save()
+      res.json({msg: "Account has been activated"})
+    } catch (error) {
+      return res.status(500).json({msg: error})
+    }
   }
+
 }
+
 
 export default authCtrl
