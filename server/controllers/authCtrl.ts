@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { generateActiveToken } from '../config/generateToken'
 import sendEmail from '../config/sendEmail'
-import {IToken} from '../config/interface'
+import {IDecodedToken} from '../config/interface'
 import { validateEmail } from '../middleware/valid'
 
 const CLIENT_URL = `${process.env.BASE_URL}`
@@ -19,7 +19,7 @@ const authCtrl={
       const passwordHash = await bcrypt.hash(password, 12)
       const newUser ={name, account, password: passwordHash}
 
-      const active_token = generateActiveToken(newUser)
+      const active_token = generateActiveToken({newUser})
 
       const url = `${CLIENT_URL}/active/${active_token}`
       // const new_user = new Users(newUser)
@@ -31,25 +31,27 @@ const authCtrl={
         return res.json({msg:'Success! Please check your email'})
       } 
 
-    } catch (error) {
-      return res.status(500).json({msg: error})
+    } catch (err) {
+      return res.status(500).json({msg: err})
     }
   },
 
   activeAccount: async(req: Request, res: Response) =>{
     try {
       const { active_token } = req.body
-      const decoded =<IToken> jwt.verify(active_token, `${process.env.ACTIVE_TOKEN_SECRET}`)
+      const decoded =<IDecodedToken> jwt.verify(active_token, `${process.env.ACTIVE_TOKEN_SECRET}`)
       
       const { newUser} = decoded 
-
+      if(!newUser) return res.status(400).json({msg: 'Invalid authentication'})
       const user = new Users(newUser)
-      console.log(user);
-      
-      await user.save()
+       await user.save()
+
       res.json({msg: "Account has been activated"})
-    } catch (error) {
-      return res.status(500).json({msg: error})
+
+    } catch (err) {
+      console.log(err);
+      
+      return res.status(500).json({msg: err})
     }
   }
 

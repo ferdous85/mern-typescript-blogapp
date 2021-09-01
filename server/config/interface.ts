@@ -4,8 +4,8 @@ export interface INewUser {
   password:string
 }
 
-export interface IToken {
-  newUser: INewUser
+export interface IDecodedToken {
+  newUser?: INewUser
   iat:number
   exp: number
 }
